@@ -1,12 +1,16 @@
 uniform float uSize;
 uniform vec2 uResolution;
+uniform float uProgress;
 
 attribute float aSize;
 
 void main(){
 
+  // New position, b/c position is a attribute and can't be modified
+  vec3 newPosition = position;
+
   // Position
-  vec4 modelPosition = modelMatrix * vec4(position, 1.0);
+  vec4 modelPosition = modelMatrix * vec4(newPosition, 1.0);
   vec4 viewPosition = viewMatrix * modelPosition;
   // Final position
   gl_Position = projectionMatrix * viewPosition;
