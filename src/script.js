@@ -95,37 +95,48 @@ const textures = [
   textureLoader.load("./particles/7.png"),
   textureLoader.load("./particles/8.png"),
 ];
-const createFirework = ({ count, position, size, textures, sphereRadius, color }) => {
-  const texture = textures[7];
+
+const createFirework = ({
+  count,
+  position,
+  size,
+  texture,
+  sphereRadius,
+  color,
+}) => {
+  //const texture = textures[7];
 
   // Geometry
   const positionsArray = new Float32Array(count * 3);
-  const sizesArray = new Float32Array(count * 3);
+  const sizesArray = new Float32Array(count);
+  const timesMultipliersArray = new Float32Array(count);
 
   for (let i = 0; i < count; ++i) {
     const i3 = i * 3;
 
     // create spherical -> generate coordinates in a sphere
     const spherical = new THREE.Spherical(
-      sphereRadius * (.75 + Math.random() * .25),
+      sphereRadius * (0.75 + Math.random() * 0.25),
       Math.PI * Math.random(),
-      (Math.PI * 2) * Math.random()
-    )
+      Math.PI * 2 * Math.random()
+    );
 
     const position = new THREE.Vector3();
     position.setFromSpherical(spherical);
 
-
-    positionsArray[i3] = position.x
-    positionsArray[i3 + 1] = position.y
-    positionsArray[i3 + 2] = position.z
+    positionsArray[i3] = position.x;
+    positionsArray[i3 + 1] = position.y;
+    positionsArray[i3 + 2] = position.z;
 
     sizesArray[i] = Math.random();
-  }
 
+    timesMultipliersArray[i] = 1 + Math.random();
+  }
 
   // geometry
   const geometry = new THREE.BufferGeometry();
+
+  // Send geometry atributes
   geometry.setAttribute(
     "position",
     new THREE.Float32BufferAttribute(positionsArray, 3)
@@ -134,6 +145,11 @@ const createFirework = ({ count, position, size, textures, sphereRadius, color }
   geometry.setAttribute(
     "aSize",
     new THREE.Float32BufferAttribute(sizesArray, 1)
+  );
+
+  geometry.setAttribute(
+    "aTimeMultiplier",
+    new THREE.Float32BufferAttribute(timesMultipliersArray, 1)
   );
 
   texture.flipY = false;
@@ -151,7 +167,7 @@ const createFirework = ({ count, position, size, textures, sphereRadius, color }
     },
     transparent: true,
     depthWrite: false,
-    blending: THREE.AdditiveBlending
+    blending: THREE.AdditiveBlending,
   });
 
   // Points
@@ -160,37 +176,60 @@ const createFirework = ({ count, position, size, textures, sphereRadius, color }
   scene.add(firework);
 
   // Dispose - Destructor
-  const destroy = ()=>{
-    scene.remove(firework)
+  const destroy = () => {
+    scene.remove(firework);
     geometry.dispose();
     material.dispose();
-  }
+  };
 
   // Animate
   gsap.to(material.uniforms.uProgress, {
     value: 1,
     ease: "linear",
     duration: 3,
-    onComplete: destroy
+    onComplete: destroy,
   });
 };
 
 // Firework props
-const props = {
-  count: 100,
-  position: new THREE.Vector3(),
-  size: 0.3,
-  textures,
-  sphereRadius: 1,
-  color: new THREE.Color('cyan'),
+// const props = {
+//   count: 100,
+//   position: new THREE.Vector3(),
+//   size: 0.3,
+//   textures,
+//   sphereRadius: 1,
+//   color: new THREE.Color("cyan"),
+// };
+
+const createRandomFirework = () => {
+  const count = Math.round(400 * Math.random() * 1000);
+  const position = new THREE.Vector3(
+    (Math.random() - 0.5) * 2,
+    Math.random(),
+    (Math.random() - 0.5) * 2
+  );
+  const size = 0.1 + Math.random() * 0.1;
+  const texture = textures[Math.floor(Math.random() * textures.length)];
+  const radius = 0.5 * Math.random();
+  const color = new THREE.Color();
+  color.setHSL(Math.random(), 1, 0.7);
+  const props = {
+    count,
+    position,
+    size,
+    texture,
+    radius,
+    color,
+  };
+  createFirework(props);
 };
 
 // create firework
 window.addEventListener("click", () => {
-  createFirework(props);
+  createRandomFirework();
 });
 
-gui.add(props, "size").min(0).max(300).name("Point Size");
+createRandomFirework();
 
 /**
  * Animate
